@@ -11,6 +11,7 @@
 #include "lisa.h"
 #include "huffman.h"
 #include "huffman_codec.h"
+#include "hamming.h"
 
 #define CMD_RX	1
 #define CMD_TX  0
@@ -323,6 +324,15 @@ int enter_rx_mode(int bps)
                     //payload[PAYLOAD_SIZE_BYTES-1] = 0x00; // null terminate
                     //printf("Raw Message: %s\n\n", payload);
 
+					// hamming decode
+					unsigned char * dhamming = (unsigned char *) malloc(PAYLOAD_SIZE_BYTES);
+					if(dhamming == NULL)
+					{
+						printf("%s: Failed on malloc!\n", __func__);
+						exit(-1);
+					}
+					hamming_decode(payload, dhamming, PAYLOAD_SIZE_BYTES);
+
                     // huffman decode
                     unsigned char * decoded = (unsigned char *) malloc(PAYLOAD_SIZE_BYTES);
                     if(decoded == NULL)
@@ -330,7 +340,7 @@ int enter_rx_mode(int bps)
                         printf("%s: Failed on malloc!\n", __func__);
                         exit(-1);
                     }
-                    huffman_decode(payload, decoded, PAYLOAD_SIZE_BYTES);
+                    huffman_decode(dhamming, decoded, PAYLOAD_SIZE_BYTES);
                     decoded[PAYLOAD_SIZE_BYTES-1] = 0x00; // null terminate
                     printf("Decoded Message: %s\n", decoded);
 
@@ -425,9 +435,19 @@ int enter_tx_mode(int bps)
             bzero(message, PAYLOAD_SIZE_BYTES);
             fgets(message, PAYLOAD_SIZE_BYTES, stdin);
 
-            // Huffman encode
-            bzero(packet->payload, PAYLOAD_SIZE_BYTES);
-            huffman_encode(message, packet->payload, PAYLOAD_SIZE_BYTES);
+			// Huffman encode
+			unsigned char * ehuffman = (unsigned char *) malloc(PAYLOAD_SIZE_BYTES);
+			if(ehuffman == NULL)
+			{
+				printf("%s: Failed on malloc!\n", __func__);
+				exit(-1);
+			}
+            bzero(ehuffman, PAYLOAD_SIZE_BYTES);
+            huffman_encode(message, ehuffman, PAYLOAD_SIZE_BYTES);
+
+			// Hamming encode
+			bzero(packet->payload, PAYLOAD_SIZE_BYTES);
+			hamming_encode(ehuffman, packet->payload, PAYLOAD_SIZE_BYTES);
 
             // reset scrambler
             d1 = 0;

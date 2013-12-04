@@ -58,10 +58,13 @@ typedef struct
     unsigned int bitoff;
 } hamming_value_data_t;
 
+
+void hamming_decode(unsigned char * input, unsigned char * output, size_t bufsize);
+void hamming_encode(unsigned char * input, unsigned char * output, size_t bufsize);
 hamming_value4_t * hamming_value4_data_get(hamming_value_data_t * buffer);
-hamming_value4_t * hamming_value4_data_put(hamming_value_data_t * buffer);
+void			   hamming_value4_data_put(hamming_value_data_t * buffer, hamming_value4_t * value);
 hamming_value7_t * hamming_value7_data_get(hamming_value_data_t * buffer);
-hamming_value7_t * hamming_value7_data_put(hamming_value_data_t * buffer);
+void			   hamming_value7_data_put(hamming_value_data_t * buffer, hamming_value7_t * value);
 void hamming_channel_encode(hamming_value4_t * value, hamming_value7_t * codeword);
 void hamming_channel_decode(hamming_value7_t *received, hamming_value4_t * value);
 int  hamming_parity_check(hamming_value7_t * received);
